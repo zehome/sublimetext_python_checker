@@ -14,8 +14,8 @@ python_checker.py. Add to local_settings.py list of your checkers.
 
 Example:
 
-CHECKERS = [('/Users/vorushin/.virtualenvs/checkers/bin/pep8', []),
-            ('/Users/vorushin/.virtualenvs/checkers/bin/pyflakes', [])]
+CHECKERS = [('/usr/bin/pep8', []),
+            ('/usr/bin/pyflakes', [])]
 
 First parameter is path to command, second - optional list of arguments.
 If you want to disable line length checking in pep8, set second parameter
@@ -33,7 +33,6 @@ For example in your project settings, add:
         ]
     }
 '''
-    raise e
 
 
 global view_messages

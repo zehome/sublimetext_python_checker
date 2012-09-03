@@ -20,6 +20,18 @@ CHECKERS = [('/Users/vorushin/.virtualenvs/checkers/bin/pep8', []),
 First parameter is path to command, second - optional list of arguments.
 If you want to disable line length checking in pep8, set second parameter
 to ['--ignore=E501'].
+
+You can also insert checkers using sublime settings.
+
+For example in your project settings, add:
+    "settings":
+    {
+        "python_syntax_checkers":
+        [
+            ["/usr/bin/pep8", ["--ignore=E501,E128,E221"] ],
+            ["/usr/bin/pyflakes", [] ]
+        ]
+    }
 '''
     raise e
 
@@ -54,8 +66,20 @@ def check_and_mark(view):
     if not view.file_name():  # we check files (not buffers)
         return
 
+    checkers = view.settings().get('python_syntax_checkers', [])
+
+    # Append "local_settings" checkers to settings checkers.
+    for checker in CHECKERS:
+        redundent = False
+        for schecker in checkers:
+            if os.path.basename(checker[0]) == os.path.basename(schecker[0]):
+                # Redundent checker, override using settings.
+                redundent = True
+        if not redundent:
+            checkers.append(checker)
+
     messages = []
-    for checker, args in CHECKERS:
+    for checker, args in checkers:
         checker_messages = []
         try:
             p = Popen([checker, view.file_name()] + args, stdout=PIPE,
@@ -69,9 +93,9 @@ def check_and_mark(view):
                     line['lineno'] + 1, line['col'] + 1, line['text'])
             messages += checker_messages
         except OSError:
-            print "Checker could not be found:", checker
+            print "Checker could not be found: %s" % (checker, )
 
-    outlines = [view.full_line(view.text_point(m['lineno'], 0)) \
+    outlines = [view.full_line(view.text_point(m['lineno'], 0))
                 for m in messages]
     view.erase_regions('python_checker_outlines')
     view.add_regions('python_checker_outlines',
